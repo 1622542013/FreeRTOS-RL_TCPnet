@@ -1,0 +1,352 @@
+<html>
+<body>
+<pre>
+<h1>礦ision Build Log</h1>
+<h2>Project:</h2>
+E:\FreeRTOS\NETwork\V5-1029_RL-TCPnet实验_BSD Socket客户端之TCP（FreeRTOS）\V5-1026_RL-TCPnet实验_BSD Socket服务器之TCP（FreeRTOS）\Project\MDK-ARM(uV4)\project.uvproj
+Project File Date:  12/08/2017
+
+<h2>Output:</h2>
+Build target 'Flash'
+compiling main.c...
+linking...
+Program Size: Code=54020 RO-data=1540 RW-data=340 ZI-data=57780  
+FromELF: creating hex file...
+".\Flash\Obj\output.axf" - 0 Error(s), 0 Warning(s).
+Load "E:\\FreeRTOS\\NETwork\\V5-1029_RL-TCPnet实验_BSD Socket客户端之TCP（FreeRTOS）\\V5-1026_RL-TCPnet实验_BSD Socket服务器之TCP（FreeRTOS）\\Project\\MDK-ARM(uV4)\\Flash\\Obj\\output.axf" 
+Set JLink Project File to "E:\FreeRTOS\NETwork\V5-1029_RL-TCPnet实验_BSD Socket客户端之TCP（FreeRTOS）\V5-1026_RL-TCPnet实验_BSD Socket服务器之TCP（FreeRTOS）\Project\MDK-ARM(uV4)\JLinkSettings.ini"
+* JLink Info: Device "STM32F407IG" selected (1024 KB flash, 128 KB RAM).
+ 
+JLink info:
+------------
+DLL: V4.80g, compiled Feb 13 2014 20:50:02
+Firmware: J-Link ARM-OB STM32 compiled Aug 22 2012 19:52:04
+Hardware: V7.00
+S/N : 20090928 
+Feature(s) : RDI,FlashDL,FlashBP,JFlash,GDBFull 
+ 
+* JLink Info: Found SWD-DP with ID 0x2BA01477
+* JLink Info: Found SWD-DP with ID 0x2BA01477
+* JLink Info: Found Cortex-M4 r0p1, Little endian.
+* JLink Info: FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: TPIU fitted.
+* JLink Info: ETM fitted.
+ROMTableAddr = 0xE00FF003
+ 
+Target info:
+------------
+Device: STM32F407IG
+VTarget = 3.300V
+State of Pins: 
+TCK: 0, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 1000 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Application running ...
+ith ID 0x2BA01477
+* JLink Info: Found SWD-DP with ID 0x2BA01477
+* JLink Info: Found Cortex-M4 r0p1, Little endian.
+* JLink Info: FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: TPIU fitted.
+* JLink Info: ETM fitted.
+ROMTableAddr = 0xE00FF003
+ 
+Target info:
+------------
+Device: STM32F407IG
+VTarget = 3.300V
+State of Pins: 
+TCK: 0, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 1000 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Application running ...
+ error:  #20: identifier "TIM6" is undefined
+        if(TIM_GetITStatus(TIM6, TIM_IT_Update) != RESET)
+..\..\User\SysInfoTest.c(59): error:  #20: identifier "TIM_IT_Update" is undefined
+        if(TIM_GetITStatus(TIM6, TIM_IT_Update) != RESET)
+..\..\User\SysInfoTest.c(59): error:  #20: identifier "RESET" is undefined
+        if(TIM_GetITStatus(TIM6, TIM_IT_Update) != RESET)
+..\..\User\SysInfoTest.c(62): warning:  #223-D: function "TIM_ClearITPendingBit" declared implicitly
+                TIM_ClearITPendingBit(TIM6, TIM_IT_Update);
+..\..\User\SysInfoTest.c: 3 warnings, 5 errors
+compiling app_tcpnet_lib.c...
+..\..\User\libapp\app_tcpnet_lib.c(182): warning:  #223-D: function "memset" declared implicitly
+                                                memset(sendbuf, 48, len);
+..\..\User\libapp\app_tcpnet_lib.c: 1 warning, 0 errors
+compiling bsp.c...
+..\..\User\bsp\bsp.c(39): warning:  #223-D: function "NVIC_PriorityGroupConfig" declared implicitly
+        NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+..\..\User\bsp\bsp.c(39): error:  #20: identifier "NVIC_PriorityGroup_4" is undefined
+        NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+..\..\User\bsp\bsp.c(42): warning:  #223-D: function "bsp_InitKey" declared implicitly
+        bsp_InitKey();          /* 初始化按键变量 */
+..\..\User\bsp\bsp.c(43): warning:  #223-D: function "bsp_InitLed" declared implicitly
+        bsp_InitLed();          /* 初始LED指示灯端口 */
+..\..\User\bsp\bsp.c: 3 warnings, 1 error
+compiling bsp_key.c...
+..\..\User\bsp\src\bsp_key.c(114): error:  #20: identifier "KEY_T" is undefined
+  static KEY_T s_tBtn[KEY_COUNT];
+..\..\User\bsp\src\bsp_key.c(114): error:  #20: identifier "KEY_COUNT" is undefined
+  static KEY_T s_tBtn[KEY_COUNT];
+..\..\User\bsp\src\bsp_key.c(115): error:  #20: identifier "KEY_FIFO_T" is undefined
+  static KEY_FIFO_T s_tKey;             /* 按键FIFO变量,结构体 */
+..\..\User\bsp\src\bsp_key.c(119): error:  #20: identifier "uint8_t" is undefined
+  static void bsp_DetectKey(uint8_t i);
+..\..\User\bsp\src\bsp_key.c(139): error:  #20: identifier "uint8_t" is undefined
+        static uint8_t IsKeyDown1(void) {if ((GPIO_PORT_K1->IDR & GPIO_PIN_K1) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(139): error:  #20: identifier "GPIOI" is undefined
+        static uint8_t IsKeyDown1(void) {if ((GPIO_PORT_K1->IDR & GPIO_PIN_K1) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(139): error:  #20: identifier "GPIO_Pin_8" is undefined
+        static uint8_t IsKeyDown1(void) {if ((GPIO_PORT_K1->IDR & GPIO_PIN_K1) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(140): error:  #20: identifier "uint8_t" is undefined
+        static uint8_t IsKeyDown2(void) {if ((GPIO_PORT_K2->IDR & GPIO_PIN_K2) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(140): error:  #20: identifier "GPIOC" is undefined
+        static uint8_t IsKeyDown2(void) {if ((GPIO_PORT_K2->IDR & GPIO_PIN_K2) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(140): error:  #20: identifier "GPIO_Pin_13" is undefined
+        static uint8_t IsKeyDown2(void) {if ((GPIO_PORT_K2->IDR & GPIO_PIN_K2) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(141): error:  #20: identifier "uint8_t" is undefined
+        static uint8_t IsKeyDown3(void) {if ((GPIO_PORT_K3->IDR & GPIO_PIN_K3) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(141): error:  #20: identifier "GPIOI" is undefined
+        static uint8_t IsKeyDown3(void) {if ((GPIO_PORT_K3->IDR & GPIO_PIN_K3) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(141): error:  #20: identifier "GPIO_Pin_11" is undefined
+        static uint8_t IsKeyDown3(void) {if ((GPIO_PORT_K3->IDR & GPIO_PIN_K3) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(142): error:  #20: identifier "uint8_t" is undefined
+        static uint8_t IsKeyDown4(void) {if ((GPIO_PORT_K4->IDR & GPIO_PIN_K4) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(142): error:  #20: identifier "GPIOH" is undefined
+        static uint8_t IsKeyDown4(void) {if ((GPIO_PORT_K4->IDR & GPIO_PIN_K4) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(142): error:  #20: identifier "GPIO_Pin_2" is undefined
+        static uint8_t IsKeyDown4(void) {if ((GPIO_PORT_K4->IDR & GPIO_PIN_K4) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(143): error:  #20: identifier "uint8_t" is undefined
+        static uint8_t IsKeyDown5(void) {if ((GPIO_PORT_K5->IDR & GPIO_PIN_K5) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(143): error:  #20: identifier "GPIOH" is undefined
+        static uint8_t IsKeyDown5(void) {if ((GPIO_PORT_K5->IDR & GPIO_PIN_K5) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(143): error:  #20: identifier "GPIO_Pin_3" is undefined
+        static uint8_t IsKeyDown5(void) {if ((GPIO_PORT_K5->IDR & GPIO_PIN_K5) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(144): error:  #20: identifier "uint8_t" is undefined
+        static uint8_t IsKeyDown6(void) {if ((GPIO_PORT_K6->IDR & GPIO_PIN_K6) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(144): error:  #20: identifier "GPIOF" is undefined
+        static uint8_t IsKeyDown6(void) {if ((GPIO_PORT_K6->IDR & GPIO_PIN_K6) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(144): error:  #20: identifier "GPIO_Pin_11" is undefined
+        static uint8_t IsKeyDown6(void) {if ((GPIO_PORT_K6->IDR & GPIO_PIN_K6) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(145): error:  #20: identifier "uint8_t" is undefined
+        static uint8_t IsKeyDown7(void) {if ((GPIO_PORT_K7->IDR & GPIO_PIN_K7) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(145): error:  #20: identifier "GPIOG" is undefined
+        static uint8_t IsKeyDown7(void) {if ((GPIO_PORT_K7->IDR & GPIO_PIN_K7) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(145): error:  #20: identifier "GPIO_Pin_7" is undefined
+        static uint8_t IsKeyDown7(void) {if ((GPIO_PORT_K7->IDR & GPIO_PIN_K7) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(146): error:  #20: identifier "uint8_t" is undefined
+        static uint8_t IsKeyDown8(void) {if ((GPIO_PORT_K8->IDR & GPIO_PIN_K8) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(146): error:  #20: identifier "GPIOH" is undefined
+        static uint8_t IsKeyDown8(void) {if ((GPIO_PORT_K8->IDR & GPIO_PIN_K8) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(146): error:  #20: identifier "GPIO_Pin_15" is undefined
+        static uint8_t IsKeyDown8(void) {if ((GPIO_PORT_K8->IDR & GPIO_PIN_K8) == 0) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(148): error:  #20: identifier "uint8_t" is undefined
+        static uint8_t IsKeyDown9(void) {if (IsKeyDown1() && IsKeyDown2()) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c(149): error:  #20: identifier "uint8_t" is undefined
+        static uint8_t IsKeyDown10(void) {if (IsKeyDown1() && IsKeyDown2()) return 1;else return 0;}
+..\..\User\bsp\src\bsp_key.c: 0 warnings, 30 errors
+compiling bsp_led.c...
+..\..\User\bsp\src\bsp_led.c(85): error:  #20: identifier "GPIO_InitTypeDef" is undefined
+        GPIO_InitTypeDef GPIO_InitStructure;
+..\..\User\bsp\src\bsp_led.c(88): warning:  #223-D: function "RCC_AHB1PeriphClockCmd" declared implicitly
+        RCC_AHB1PeriphClockCmd(RCC_ALL_LED, ENABLE);
+..\..\User\bsp\src\bsp_led.c(88): error:  #20: identifier "RCC_AHB1Periph_GPIOC" is undefined
+        RCC_AHB1PeriphClockCmd(RCC_ALL_LED, ENABLE);
+..\..\User\bsp\src\bsp_led.c(88): error:  #20: identifier "RCC_AHB1Periph_GPIOF" is undefined
+        RCC_AHB1PeriphClockCmd(RCC_ALL_LED, ENABLE);
+..\..\User\bsp\src\bsp_led.c(88): error:  #20: identifier "RCC_AHB1Periph_GPIOI" is undefined
+        RCC_AHB1PeriphClockCmd(RCC_ALL_LED, ENABLE);
+..\..\User\bsp\src\bsp_led.c(88): error:  #20: identifier "ENABLE" is undefined
+        RCC_AHB1PeriphClockCmd(RCC_ALL_LED, ENABLE);
+..\..\User\bsp\src\bsp_led.c(95): warning:  #223-D: function "bsp_LedOff" declared implicitly
+        bsp_LedOff(1);
+..\..\User\bsp\src\bsp_led.c(100): error:  #20: identifier "GPIO_Mode_OUT" is undefined
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;           /* 设为输出口 */
+..\..\User\bsp\src\bsp_led.c(101): error:  #20: identifier "GPIO_OType_PP" is undefined
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;          /* 设为推挽模式 */
+..\..\User\bsp\src\bsp_led.c(102): error:  #20: identifier "GPIO_PuPd_NOPULL" is undefined
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;        /* 上下拉电阻不使能 */
+..\..\User\bsp\src\bsp_led.c(103): error:  #20: identifier "GPIO_Speed_100MHz" is undefined
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;      /* IO口最大速度 */
+..\..\User\bsp\src\bsp_led.c(105): error:  #20: identifier "GPIO_Pin_10" is undefined
+        GPIO_InitStructure.GPIO_Pin = GPIO_PIN_LED1;
+..\..\User\bsp\src\bsp_led.c(106): warning:  #223-D: function "GPIO_Init" declared implicitly
+        GPIO_Init(GPIO_PORT_LED1, &GPIO_InitStructure);
+..\..\User\bsp\src\bsp_led.c(106): error:  #20: identifier "GPIOI" is undefined
+        GPIO_Init(GPIO_PORT_LED1, &GPIO_InitStructure);
+..\..\User\bsp\src\bsp_led.c(108): error:  #20: identifier "GPIO_Pin_7" is undefined
+        GPIO_InitStructure.GPIO_Pin = GPIO_PIN_LED2;
+..\..\User\bsp\src\bsp_led.c(109): error:  #20: identifier "GPIOF" is undefined
+        GPIO_Init(GPIO_PORT_LED2, &GPIO_InitStructure);
+..\..\User\bsp\src\bsp_led.c(111): error:  #20: identifier "GPIO_Pin_8" is undefined
+        GPIO_InitStructure.GPIO_Pin = GPIO_PIN_LED3;
+..\..\User\bsp\src\bsp_led.c(114): error:  #20: identifier "GPIO_Pin_2" is undefined
+        GPIO_InitStructure.GPIO_Pin = GPIO_PIN_LED4;
+..\..\User\bsp\src\bsp_led.c(115): error:  #20: identifier "GPIOC" is undefined
+        GPIO_Init(GPIO_PORT_LED4, &GPIO_InitStructure);
+..\..\User\bsp\src\bsp_led.c(126): error:  #20: identifier "uint8_t" is undefined
+  void bsp_LedOn(uint8_t _no)
+..\..\User\bsp\src\bsp_led.c(132): error:  #20: identifier "GPIOI" is undefined
+                GPIO_PORT_LED1->BSRRH = GPIO_PIN_LED1;
+..\..\User\bsp\src\bsp_led.c(132): error:  #20: identifier "GPIO_Pin_10" is undefined
+                GPIO_PORT_LED1->BSRRH = GPIO_PIN_LED1;
+..\..\User\bsp\src\bsp_led.c(136): error:  #20: identifier "GPIOF" is undefined
+                GPIO_PORT_LED2->BSRRH = GPIO_PIN_LED2;
+..\..\User\bsp\src\bsp_led.c(136): error:  #20: identifier "GPIO_Pin_7" is undefined
+                GPIO_PORT_LED2->BSRRH = GPIO_PIN_LED2;
+..\..\User\bsp\src\bsp_led.c(140): error:  #20: identifier "GPIOF" is undefined
+                GPIO_PORT_LED3->BSRRH = GPIO_PIN_LED3;
+..\..\User\bsp\src\bsp_led.c(140): error:  #20: identifier "GPIO_Pin_8" is undefined
+                GPIO_PORT_LED3->BSRRH = GPIO_PIN_LED3;
+..\..\User\bsp\src\bsp_led.c(144): error:  #20: identifier "GPIOC" is undefined
+                GPIO_PORT_LED4->BSRRH = GPIO_PIN_LED4;
+..\..\User\bsp\src\bsp_led.c(144): error:  #20: identifier "GPIO_Pin_2" is undefined
+                GPIO_PORT_LED4->BSRRH = GPIO_PIN_LED4;
+..\..\User\bsp\src\bsp_led.c(156): error:  #20: identifier "uint8_t" is undefined
+  void bsp_LedOff(uint8_t _no)
+..\..\User\bsp\src\bsp_led.c(156): error:  #159: declaration is incompatible with previous "bsp_LedOff" (declared at line 95)
+  void bsp_LedOff(uint8_t _no)
+..\..\User\bsp\src\bsp_led.c(162): error:  #20: identifier "GPIOI" is undefined
+                GPIO_PORT_LED1->BSRRL = GPIO_PIN_LED1;
+..\..\User\bsp\src\bsp_led.c(162): error:  #20: identifier "GPIO_Pin_10" is undefined
+                GPIO_PORT_LED1->BSRRL = GPIO_PIN_LED1;
+..\..\User\bsp\src\bsp_led.c(166): error:  #20: identifier "GPIOF" is undefined
+                GPIO_PORT_LED2->BSRRL = GPIO_PIN_LED2;
+..\..\User\bsp\src\bsp_led.c: 3 warnings, 30 errors
+compiling bsp_uart_fifo.c...
+..\..\User\bsp\src\bsp_uart_fifo.c(66): error:  #20: identifier "UART_T" is undefined
+  static void UartSend(UART_T *_pUart, uint8_t *_ucaBuf, uint16_t _usLen);
+..\..\User\bsp\src\bsp_uart_fifo.c(66): error:  #20: identifier "uint8_t" is undefined
+  static void UartSend(UART_T *_pUart, uint8_t *_ucaBuf, uint16_t _usLen);
+..\..\User\bsp\src\bsp_uart_fifo.c(66): error:  #20: identifier "uint16_t" is undefined
+  static void UartSend(UART_T *_pUart, uint8_t *_ucaBuf, uint16_t _usLen);
+..\..\User\bsp\src\bsp_uart_fifo.c(67): error:  #20: identifier "uint8_t" is undefined
+  static uint8_t UartGetChar(UART_T *_pUart, uint8_t *_pByte);
+..\..\User\bsp\src\bsp_uart_fifo.c(67): error:  #20: identifier "UART_T" is undefined
+  static uint8_t UartGetChar(UART_T *_pUart, uint8_t *_pByte);
+..\..\User\bsp\src\bsp_uart_fifo.c(67): error:  #20: identifier "uint8_t" is undefined
+  static uint8_t UartGetChar(UART_T *_pUart, uint8_t *_pByte);
+..\..\User\bsp\src\bsp_uart_fifo.c(68): error:  #20: identifier "UART_T" is undefined
+  static void UartIRQ(UART_T *_pUart);
+..\..\User\bsp\src\bsp_uart_fifo.c(100): error:  #20: identifier "UART_T" is undefined
+  UART_T *ComToUart(COM_PORT_E _ucPort)
+..\..\User\bsp\src\bsp_uart_fifo.c(100): error:  #20: identifier "COM_PORT_E" is undefined
+  UART_T *ComToUart(COM_PORT_E _ucPort)
+..\..\User\bsp\src\bsp_uart_fifo.c(102): error:  #20: identifier "COM1" is undefined
+        if (_ucPort == COM1)
+..\..\User\bsp\src\bsp_uart_fifo.c(110): error:  #20: identifier "COM2" is undefined
+        else if (_ucPort == COM2)
+..\..\User\bsp\src\bsp_uart_fifo.c(115): error:  #20: identifier "NULL" is undefined
+                        return NULL;
+..\..\User\bsp\src\bsp_uart_fifo.c(118): error:  #20: identifier "COM3" is undefined
+        else if (_ucPort == COM3)
+..\..\User\bsp\src\bsp_uart_fifo.c(126): error:  #20: identifier "COM4" is undefined
+        else if (_ucPort == COM4)
+..\..\User\bsp\src\bsp_uart_fifo.c(134): error:  #20: identifier "COM5" is undefined
+        else if (_ucPort == COM5)
+..\..\User\bsp\src\bsp_uart_fifo.c(142): error:  #20: identifier "COM6" is undefined
+        else if (_ucPort == COM6)
+..\..\User\bsp\src\bsp_uart_fifo.c(166): error:  #20: identifier "USART_TypeDef" is undefined
+  USART_TypeDef *ComToUSARTx(COM_PORT_E _ucPort)
+..\..\User\bsp\src\bsp_uart_fifo.c(166): error:  #20: identifier "COM_PORT_E" is undefined
+  USART_TypeDef *ComToUSARTx(COM_PORT_E _ucPort)
+..\..\User\bsp\src\bsp_uart_fifo.c(168): error:  #20: identifier "COM1" is undefined
+        if (_ucPort == COM1)
+..\..\User\bsp\src\bsp_uart_fifo.c(176): error:  #20: identifier "COM2" is undefined
+        else if (_ucPort == COM2)
+..\..\User\bsp\src\bsp_uart_fifo.c(181): error:  #20: identifier "NULL" is undefined
+                        return NULL;
+..\..\User\bsp\src\bsp_uart_fifo.c(184): error:  #20: identifier "COM3" is undefined
+        else if (_ucPort == COM3)
+..\..\User\bsp\src\bsp_uart_fifo.c(192): error:  #20: identifier "COM4" is undefined
+        else if (_ucPort == COM4)
+..\..\User\bsp\src\bsp_uart_fifo.c(200): error:  #20: identifier "COM5" is undefined
+        else if (_ucPort == COM5)
+..\..\User\bsp\src\bsp_uart_fifo.c(225): error:  #20: identifier "COM_PORT_E" is undefined
+  void comSendBuf(COM_PORT_E _ucPort, uint8_t *_ucaBuf, uint16_t _usLen)
+..\..\User\bsp\src\bsp_uart_fifo.c(225): error:  #20: identifier "uint8_t" is undefined
+  void comSendBuf(COM_PORT_E _ucPort, uint8_t *_ucaBuf, uint16_t _usLen)
+..\..\User\bsp\src\bsp_uart_fifo.c(225): error:  #20: identifier "uint16_t" is undefined
+  void comSendBuf(COM_PORT_E _ucPort, uint8_t *_ucaBuf, uint16_t _usLen)
+..\..\User\bsp\src\bsp_uart_fifo.c(227): error:  #20: identifier "UART_T" is undefined
+        UART_T *pUart;
+..\..\User\bsp\src\bsp_uart_fifo.c(227): error:  #20: identifier "pUart" is undefined
+        UART_T *pUart;
+..\..\User\bsp\src\bsp_uart_fifo.c(252): error:  #20: identifier "COM_PORT_E" is undefined
+  void comSendChar(COM_PORT_E _ucPort, uint8_t _ucByte)
+..\..\User\bsp\src\bsp_uart_fifo.c: 0 warnings, 30 errors
+compiling bsp_tim_pwm.c...
+..\..\User\bsp\src\bsp_tim_pwm.c(87): error:  #20: identifier "uint32_t" is undefined
+  uint32_t bsp_GetRCCofGPIO(GPIO_TypeDef* GPIOx)
+..\..\User\bsp\src\bsp_tim_pwm.c(87): error:  #20: identifier "GPIO_TypeDef" is undefined
+  uint32_t bsp_GetRCCofGPIO(GPIO_TypeDef* GPIOx)
+..\..\User\bsp\src\bsp_tim_pwm.c(89): error:  #20: identifier "uint32_t" is undefined
+        uint32_t rcc = 0;
+..\..\User\bsp\src\bsp_tim_pwm.c(91): error:  #20: identifier "GPIOA" is undefined
+        if (GPIOx == GPIOA)
+..\..\User\bsp\src\bsp_tim_pwm.c(93): error:  #20: identifier "RCC_AHB1Periph_GPIOA" is undefined
+                rcc = RCC_AHB1Periph_GPIOA;
+..\..\User\bsp\src\bsp_tim_pwm.c(95): error:  #20: identifier "GPIOB" is undefined
+        else if (GPIOx == GPIOB)
+..\..\User\bsp\src\bsp_tim_pwm.c(97): error:  #20: identifier "RCC_AHB1Periph_GPIOB" is undefined
+                rcc = RCC_AHB1Periph_GPIOB;
+..\..\User\bsp\src\bsp_tim_pwm.c(99): error:  #20: identifier "GPIOC" is undefined
+        else if (GPIOx == GPIOC)
+..\..\User\bsp\src\bsp_tim_pwm.c(101): error:  #20: identifier "RCC_AHB1Periph_GPIOC" is undefined
+                rcc = RCC_AHB1Periph_GPIOC;
+..\..\User\bsp\src\bsp_tim_pwm.c(103): error:  #20: identifier "GPIOD" is undefined
+        else if (GPIOx == GPIOD)
+..\..\User\bsp\src\bsp_tim_pwm.c(105): error:  #20: identifier "RCC_AHB1Periph_GPIOD" is undefined
+                rcc = RCC_AHB1Periph_GPIOD;
+..\..\User\bsp\src\bsp_tim_pwm.c(107): error:  #20: identifier "GPIOE" is undefined
+        else if (GPIOx == GPIOE)
+..\..\User\bsp\src\bsp_tim_pwm.c(109): error:  #20: identifier "RCC_AHB1Periph_GPIOE" is undefined
+                rcc = RCC_AHB1Periph_GPIOE;
+..\..\User\bsp\src\bsp_tim_pwm.c(111): error:  #20: identifier "GPIOF" is undefined
+        else if (GPIOx == GPIOF)
+..\..\User\bsp\src\bsp_tim_pwm.c(113): error:  #20: identifier "RCC_AHB1Periph_GPIOF" is undefined
+                rcc = RCC_AHB1Periph_GPIOF;
+..\..\User\bsp\src\bsp_tim_pwm.c(115): error:  #20: identifier "GPIOG" is undefined
+        else if (GPIOx == GPIOG)
+..\..\User\bsp\src\bsp_tim_pwm.c(117): error:  #20: identifier "RCC_AHB1Periph_GPIOG" is undefined
+                rcc = RCC_AHB1Periph_GPIOG;
+..\..\User\bsp\src\bsp_tim_pwm.c(119): error:  #20: identifier "GPIOH" is undefined
+        else if (GPIOx == GPIOH)
+..\..\User\bsp\src\bsp_tim_pwm.c(121): error:  #20: identifier "RCC_AHB1Periph_GPIOH" is undefined
+                rcc = RCC_AHB1Periph_GPIOH;
+..\..\User\bsp\src\bsp_tim_pwm.c(123): error:  #20: identifier "GPIOI" is undefined
+        else if (GPIOx == GPIOI)
+..\..\User\bsp\src\bsp_tim_pwm.c(125): error:  #20: identifier "RCC_AHB1Periph_GPIOI" is undefined
+                rcc = RCC_AHB1Periph_GPIOI;
+..\..\User\bsp\src\bsp_tim_pwm.c(139): error:  #20: identifier "uint16_t" is undefined
+  uint16_t bsp_GetPinSource(uint16_t gpio_pin)
+..\..\User\bsp\src\bsp_tim_pwm.c(139): error:  #20: identifier "uint16_t" is undefined
+  uint16_t bsp_GetPinSource(uint16_t gpio_pin)
+..\..\User\bsp\src\bsp_tim_pwm.c(141): error:  #20: identifier "uint16_t" is undefined
+        uint16_t ret = 0;
+..\..\User\bsp\src\bsp_tim_pwm.c(143): error:  #20: identifier "GPIO_Pin_0" is undefined
+        if (gpio_pin == GPIO_Pin_0)
+..\..\User\bsp\src\bsp_tim_pwm.c(145): error:  #20: identifier "GPIO_PinSource0" is undefined
+                ret = GPIO_PinSource0;
+..\..\User\bsp\src\bsp_tim_pwm.c(147): error:  #20: identifier "GPIO_Pin_1" is undefined
+        else if (gpio_pin == GPIO_Pin_1)
+..\..\User\bsp\src\bsp_tim_pwm.c(149): error:  #20: identifier "GPIO_PinSource1" is undefined
+                ret = GPIO_PinSource1;
+..\..\User\bsp\src\bsp_tim_pwm.c(151): error:  #20: identifier "GPIO_Pin_2" is undefined
+        else if (gpio_pin == GPIO_Pin_2)
+..\..\User\bsp\src\bsp_tim_pwm.c(153): error:  #20: identifier "GPIO_PinSource2" is undefined
+                ret = GPIO_PinSource2;
+..\..\User\bsp\src\bsp_tim_pwm.c: 0 warnings, 30 errors
+".\Flash\Obj\output.axf" - 131 Error(s), 15 Warning(s).
+Target not created

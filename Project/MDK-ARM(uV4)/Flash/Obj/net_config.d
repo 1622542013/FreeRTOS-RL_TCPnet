@@ -1,0 +1,17 @@
+.\flash\obj\net_config.o: ..\..\RL-ARM\Config\Net_Config.c
+.\flash\obj\net_config.o: ..\..\RL-ARM\Config\Net_Config.h
+.\flash\obj\net_config.o: ..\..\RL-ARM\RL-RTX\inc\RTL.h
+.\flash\obj\net_config.o: ..\..\RL-ARM\Config\Net_lib.c
+.\flash\obj\net_config.o: ..\..\FreeRTOS\include\FreeRTOS.h
+.\flash\obj\net_config.o: C:\Keil_v5\ARM\ARMCC\include\stddef.h
+.\flash\obj\net_config.o: C:\Keil_v5\ARM\ARMCC\include\stdint.h
+.\flash\obj\net_config.o: ..\..\User\FreeRTOSConfig.h
+.\flash\obj\net_config.o: ..\..\FreeRTOS\include\projdefs.h
+.\flash\obj\net_config.o: ..\..\FreeRTOS\include\portable.h
+.\flash\obj\net_config.o: ..\..\FreeRTOS\include\deprecated_definitions.h
+.\flash\obj\net_config.o: ..\..\FreeRTOS\portable\RVDS\ARM_CM4F\portmacro.h
+.\flash\obj\net_config.o: ..\..\FreeRTOS\include\mpu_wrappers.h
+.\flash\obj\net_config.o: ..\..\FreeRTOS\include\task.h
+.\flash\obj\net_config.o: ..\..\FreeRTOS\include\list.h
+.\flash\obj\net_config.o: ..\..\FreeRTOS\include\queue.h
+.\flash\obj\net_config.o: ..\..\FreeRTOS\include\semphr.h

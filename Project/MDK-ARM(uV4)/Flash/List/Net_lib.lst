@@ -1,0 +1,869 @@
+L 1 "..\..\RL-ARM\Config\Net_lib.c"
+N/*----------------------------------------------------------------------------
+N *      RL-ARM - TCPnet
+N *----------------------------------------------------------------------------
+N *      Name:    NET_LIB.C
+N *      Purpose: TCPnet System Configuration
+N *      Rev.:    V4.72
+N *----------------------------------------------------------------------------
+N *      This code is part of the RealView Run-Time Library.
+N *      Copyright (c) 2004-2013 KEIL - An ARM Company. All rights reserved.
+N *---------------------------------------------------------------------------*/
+N
+N#pragma thumb
+N#pragma O3
+N
+N/*----------------------------------------------------------------------------
+N *      Library for Net_Config.c
+N *---------------------------------------------------------------------------*/
+N
+N#ifdef __NET_CONFIG__
+S
+S#if (__RTX)
+S  #include "FreeRTOS.h"
+S  #include "task.h"
+S  #include "queue.h"
+S  #include "semphr.h"
+S#endif
+S
+S/* Non-Critical Net_Config.c upgrade */
+S#ifndef HTTP_SRVID
+S #define HTTP_SRVID     ""
+S#endif
+S#ifndef FTP_WELMSG
+S #define FTP_WELMSG     ""
+S#endif
+S#ifndef DHCP_VCID
+S #define DHCP_VCID      ""
+S#endif
+S#ifndef DHCP_BOOTF
+S #define DHCP_BOOTF     0
+S#endif
+S#ifndef DHCP_NTPSRV
+S #define DHCP_NTPSRV    0
+S#endif
+S#ifndef TNET_NOECHO
+S #define TNET_NOECHO    0
+S#endif
+S#ifndef TFTP_ENFWALL
+S #define TFTP_ENFWALL   0
+S#endif
+S#ifndef TCP_MAXSEGSZ
+S #define TCP_MAXSEGSZ   1460
+S#endif
+S#ifndef TCP_RECWINSZ
+S #define TCP_RECWINSZ   TCP_DEF_WINSIZE
+S#endif
+S
+S#define TICK_RATE       (1000 / TICK_INTERVAL)
+S
+S/* Some configuration error checking. */
+S#if !(SLIP_ENABLE || PPP_ENABLE || ETH_ENABLE)
+S #error All network interfaces disabled in configuration
+S#endif
+S
+S#if (SLIP_ENABLE && PPP_ENABLE)
+S #error Both SLIP and PPP interfaces enabled
+S#endif
+S
+S/* Check TCP Socket enable. */
+S#if (!TCP_ENABLE & (BSD_ENABLE | HTTP_ENABLE | TNET_ENABLE | FTP_ENABLE | \
+S                    FTPC_ENABLE | SMTP_ENABLE))
+X#if (!TCP_ENABLE & (BSD_ENABLE | HTTP_ENABLE | TNET_ENABLE | FTP_ENABLE |                     FTPC_ENABLE | SMTP_ENABLE))
+S #error Application needs TCP Sockets enabled
+S#endif
+S
+S/* Check UDP Socket enable */
+S#if (!UDP_ENABLE & (BSD_ENABLE | TFTP_ENABLE | DNS_ENABLE | SNMP_ENABLE | \
+S                    SNTP_ENABLE | ((DHCP_ENABLE | NBNS_ENABLE) & ETH_ENABLE)))
+X#if (!UDP_ENABLE & (BSD_ENABLE | TFTP_ENABLE | DNS_ENABLE | SNMP_ENABLE |                     SNTP_ENABLE | ((DHCP_ENABLE | NBNS_ENABLE) & ETH_ENABLE)))
+S #error Application needs UDP Sockets enabled
+S#endif
+S
+S/* Check number of TCP sockets available. */
+S#define __TCPNS    ((BSD_ENABLE  * BSD_NUMSOCKS)   + \
+S                    (HTTP_ENABLE * HTTP_NUMSESS)   + \
+S                    (TNET_ENABLE * TNET_NUMSESS)   + \
+S                    (FTP_ENABLE  * FTP_NUMSESS*2)  + \
+S                    (FTPC_ENABLE * 2)              + \
+S                    (SMTP_ENABLE * 1))
+X#define __TCPNS    ((BSD_ENABLE  * BSD_NUMSOCKS)   +                     (HTTP_ENABLE * HTTP_NUMSESS)   +                     (TNET_ENABLE * TNET_NUMSESS)   +                     (FTP_ENABLE  * FTP_NUMSESS*2)  +                     (FTPC_ENABLE * 2)              +                     (SMTP_ENABLE * 1))
+S
+S#if (__TCPNS > TCP_NUMSOCKS)
+S #error Number of TCP Sockets too small
+S#endif
+S
+S/* Calculate number of UDP sockets needed for TFTP server. */
+S#if (TFTP_ENFWALL)
+S #define __TFTP_NSOCKS  1
+S#else
+S #define __TFTP_NSOCKS  (1 + TFTP_NUMSESS)
+S#endif
+S
+S/* Check number of UDP sockets available. */
+S#define __UDPNS    ((BSD_ENABLE  * BSD_NUMSOCKS)   + \
+S                    (TFTP_ENABLE * __TFTP_NSOCKS)  + \
+S                    (TFTPC_ENABLE* 1)              + \
+S                    (DNS_ENABLE  * 1)              + \
+S                    (SNMP_ENABLE * 1)              + \
+S                    (SNTP_ENABLE * 1)              + \
+S                    (DHCP_ENABLE * ETH_ENABLE)     + \
+S                    (NBNS_ENABLE * ETH_ENABLE))
+X#define __UDPNS    ((BSD_ENABLE  * BSD_NUMSOCKS)   +                     (TFTP_ENABLE * __TFTP_NSOCKS)  +                     (TFTPC_ENABLE* 1)              +                     (DNS_ENABLE  * 1)              +                     (SNMP_ENABLE * 1)              +                     (SNTP_ENABLE * 1)              +                     (DHCP_ENABLE * ETH_ENABLE)     +                     (NBNS_ENABLE * ETH_ENABLE))
+S
+S#if (__UDPNS > UDP_NUMSOCKS)
+S #error Number of UDP Sockets too small
+S#endif
+S
+S/* Check BSD Server sockets */
+S#if (BSD_ENABLE && (BSD_SRVSOCKS > BSD_NUMSOCKS))
+S #error Number of BSD Server sockets too large
+S#endif
+S
+S/* Check BSD Hostname resolver */
+S#if (BSD_ENABLE && BSD_GETHOSTEN && !DNS_ENABLE)
+S #error BSD Hostname resolver needs DNS enabled
+S#endif
+S
+S/* Check PPP Authentication protocols */
+S#if (PPP_ENABLE && PPP_AUTHEN && !(PPP_PAPEN | PPP_CHAPEN))
+S #error PPP Authentication needs PAP or/and CHAP enabled
+S#endif
+S
+S/* Check Net_Config.c version */
+S#if (TNET_ENABLE && !defined(TNET_IDLETOUT))                     || \
+S    (FTP_ENABLE  && !defined(FTP_IDLETOUT))                      || \
+S    (PPP_ENABLE  && (defined(_ACCM1) || defined(LCP_MAXRETRY)))
+X#if (TNET_ENABLE && !defined(TNET_IDLETOUT))                     ||     (FTP_ENABLE  && !defined(FTP_IDLETOUT))                      ||     (PPP_ENABLE  && (defined(_ACCM1) || defined(LCP_MAXRETRY)))
+S #error Net_Config.c too old, needs update
+S#endif
+S
+S/* Check Maximum Segment Size of TCP Socket */
+S#if (TCP_ENABLE && ((TCP_MAXSEGSZ < 536) || (TCP_MAXSEGSZ > 1460)))
+S #error TCP Maximum Segment Size out of range
+S#endif
+S
+S/* Check Receive Window Size of TCP Socket */
+S#if (TCP_ENABLE && (TCP_RECWINSZ < TCP_MAXSEGSZ))
+S #error TCP Receive Window Size too small
+S#endif
+S
+S/* Check Block Size of TFTP Server */
+S#if (TFTPC_ENABLE && ((TFTPC_BLOCKSZ < 128) || (TFTPC_BLOCKSZ > 1428)))
+S #error TFTP Client Block Size out of range
+S#endif
+S
+S/* Local Machine info */
+SLOCALM const nlocalm[3] = {
+S /* Ethernet: Local IP address */
+S#if (ETH_ENABLE)
+S {{_IP1,_IP2,_IP3,_IP4},
+S  /* Default Gateway IP address */
+S  {_GW1,_GW2,_GW3,_GW4},
+S  /* Subnet IP Mask */
+S  {_MSK1,_MSK2,_MSK3,_MSK4},
+S  /* Primary DNS Server IP */
+S  {_pDNS1,_pDNS2,_pDNS3,_pDNS4},
+S  /* Secondary DNS Server IP */
+S  {_sDNS1,_sDNS2,_sDNS3,_sDNS4}},
+S#else
+S {{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}},
+S#endif
+S /* PPP: Local IP address */
+S#if (PPP_ENABLE)
+S {{_IP1P,_IP2P,_IP3P,_IP4P},
+S  /* Default Gateway IP address */
+S  {0,0,0,0},
+S  /* Subnet IP Mask */
+S  {_MSK1P,_MSK2P,_MSK3P,_MSK4P},
+S  /* Primary DNS Server IP */
+S  {_pDNS1P,_pDNS2P,_pDNS3P,_pDNS4P},
+S  /* Secondary DNS Server IP */
+S  {_sDNS1P,_sDNS2P,_sDNS3P,_sDNS4P}},
+S#else
+S {{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}},
+S#endif
+S /* SLIP: Local IP address */
+S#if (SLIP_ENABLE)
+S {{_IP1S,_IP2S,_IP3S,_IP4S},
+S  /* Default Gateway IP address */
+S  {0,0,0,0},
+S  /* Subnet IP Mask */
+S  {_MSK1S,_MSK2S,_MSK3S,_MSK4S},
+S  /* Primary DNS Server IP */
+S  {_pDNS1S,_pDNS2S,_pDNS3S,_pDNS4S},
+S  /* Secondary DNS Server IP */
+S  {_sDNS1S,_sDNS2S,_sDNS3S,_sDNS4S}}
+S#else
+S {{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}},
+S#endif
+S};
+S/* System configuration */
+Sstatic U32 mem_pool[MEM_SIZE];
+S       U8  lhost_name[16] = LHOST_NAME;
+SSYS_CFG sys_config = {
+S  mem_pool,
+S  sizeof (mem_pool),
+S  TICK_RATE,
+S  TICK_INTERVAL,
+S  TICK_RATE / 5,
+S  (PPP_GETIP<<5   | SLIP_DEFGW<<4 | PPP_DEFGW<<3 |
+S   SLIP_ENABLE<<2 | PPP_ENABLE<<1 | ETH_ENABLE),
+S  lhost_name
+S};
+S/* Ethernet network interface */
+S#if (ETH_ENABLE)
+S static ARP_INFO arp_table[ARP_TABSIZE];
+S U8     own_hw_adr[ETH_ADRLEN] = {_MAC1,_MAC2,_MAC3,_MAC4,_MAC5,_MAC6};
+S ARP_CFG arp_config = {
+S   arp_table,
+S   ARP_TABSIZE,
+S   ARP_TIMEOUT,
+S   ARP_MAXRETRY,
+S   ARP_RESEND,
+S   ARP_NOTIFY
+S };
+S#endif
+S#if (PPP_ENABLE)
+S PPP_CFG ppp_config = {
+S   PPP_ACCM,
+S   5 * TICK_RATE,
+S   PPP_RETRYTOUT * TICK_RATE,
+S   PPP_ECHOTOUT,
+S   PPP_MAXRETRY,
+S   ((PPP_CHAPEN << 1) | PPP_PAPEN) * PPP_AUTHEN
+S };
+S#endif
+S#if (SLIP_ENABLE)
+S U16 const slip_SerTout  = 5 * TICK_RATE;
+S#endif
+S#if (ETH_ENABLE && IGMP_ENABLE)
+S static IGMP_INFO igmp_table[IGMP_TABSIZE];
+S IGMP_CFG  igmp_config = {
+S   igmp_table,
+S   IGMP_TABSIZE,
+S };
+S#endif
+S#if (ETH_ENABLE && DHCP_ENABLE)
+S DHCP_CFG dhcp_config = {
+S   DHCP_VCID,
+S   (DHCP_NTPSRV << 1) | DHCP_BOOTF
+S };
+S#endif
+S#if (UDP_ENABLE)
+S static UDP_INFO udp_scb[UDP_NUMSOCKS];
+S UDP_CFG udp_config = {
+S   udp_scb,
+S   UDP_NUMSOCKS,
+S };
+S#endif
+S#if (TCP_ENABLE)
+S static TCP_INFO tcp_scb[TCP_NUMSOCKS];
+S TCP_CFG tcp_config = {
+S   tcp_scb,
+S   TCP_NUMSOCKS,
+S   TCP_MAXRETRY,
+S   TCP_RETRYTOUT * TICK_RATE,
+S   (200 + TICK_INTERVAL - 1) / TICK_INTERVAL,
+S   TCP_SYN_RETRY_TOUT * TICK_RATE,
+S   TCP_INIT_RETRY_TOUT * TICK_RATE,
+S   TCP_DEFTOUT,
+S   TCP_MAXSEGSZ,
+S   TCP_RECWINSZ,
+S   TCP_CONRETRY
+S };
+S#endif
+S#if (HTTP_ENABLE)
+S static HTTP_INFO http_scb[HTTP_NUMSESS];
+S static U8 http_passw[PASSW_SZ] = HTTP_AUTHPASSW;
+S HTTP_CFG  http_config = {
+S   http_scb,
+S   HTTP_NUMSESS,
+S   HTTP_ENAUTH,
+S   HTTP_PORTNUM,
+S   HTTP_SRVID,
+S #if (HTTP_ENAUTH)
+S   HTTP_AUTHREALM,
+S   HTTP_AUTHUSER,
+S   http_passw
+S #else
+S   "","",""
+S #endif
+S };
+S#endif
+S#if (TNET_ENABLE)
+S static TNET_INFO tnet_scb[TNET_NUMSESS];
+S static U8 tnet_passw[PASSW_SZ] = TNET_AUTHPASSW;
+S TNET_CFG  tnet_config = {
+S   tnet_scb,
+S   TNET_NUMSESS,
+S   TNET_ENAUTH,
+S   TNET_NOECHO,
+S   TNET_PORTNUM,
+S   TNET_IDLETOUT,
+S #if (TNET_ENAUTH)
+S   TNET_AUTHUSER,
+S   tnet_passw
+S #else
+S   "",""
+S #endif
+S };
+S#endif
+S#if (TFTP_ENABLE)
+S static TFTP_INFO tftp_scb[TFTP_NUMSESS];
+S TFTP_CFG tftp_config = {
+S   &tftp_scb[0],
+S   TFTP_NUMSESS,
+S   TFTP_MAXRETRY,
+S   TFTP_PORTNUM,
+S   TFTP_DEFTOUT,
+S   TFTP_ENFWALL
+S };
+S#endif
+S#if (TFTPC_ENABLE)
+S TFTPC_CFG tftpc_config = {
+S   TFTPC_BLOCKSZ,
+S   (TFTPC_RETRYTO * TICK_RATE + 5) / 10,
+S   TFTPC_MAXRETRY
+S };
+S#endif
+S#if (FTP_ENABLE)
+S static FTP_INFO ftp_scb[FTP_NUMSESS];
+S static U8 ftp_passw[PASSW_SZ] = FTP_AUTHPASSW;
+S #define _LS(s)  sizeof(s)-1,s
+S FTP_CFG ftp_config = {
+S   ftp_scb,
+S   FTP_NUMSESS,
+S   FTP_ENAUTH,
+S   FTP_PORTNUM,
+S   FTP_IDLETOUT,
+S  _LS(FTP_WELMSG),
+S #if (FTP_ENAUTH)
+S   FTP_AUTHUSER,
+S   ftp_passw
+S #else
+S   "",""
+S #endif
+S };
+S#endif
+S#if (FTPC_ENABLE)
+S FTPC_CFG ftpc_config = {
+S   FTPC_DEFTOUT,
+S   FTPC_PASVMODE
+S };
+S#endif
+S#if (DNS_ENABLE)
+S static DNS_CACHE dns_table[DNS_TABSIZE];
+SDNS_CFG dns_config = {
+S   dns_table,
+S   DNS_TABSIZE
+S };
+S#endif
+S#if (SMTP_ENABLE)
+S U8 const smtp_DefTout = SMTP_DEFTOUT;
+S#endif
+S#if (SNMP_ENABLE)
+S SNMP_CFG snmp_config = {
+S   SNMP_PORTNUM,
+S   SNMP_TRAPPORT,
+S   { SNMP_TRAPIP1, SNMP_TRAPIP2, SNMP_TRAPIP3, SNMP_TRAPIP4 },
+S   SNMP_COMMUNITY,
+S   TICK_INTERVAL / 5
+S };
+S#endif
+S#if (SNTP_ENABLE)
+S SNTP_CFG sntp_config = {
+S { SNTP_SRVIP1, SNTP_SRVIP2, SNTP_SRVIP3, SNTP_SRVIP4 },
+S SNTP_BCMODE
+S };
+S#endif
+S#if (BSD_ENABLE) 
+S static BSD_INFO bsd_scb[BSD_NUMSOCKS + BSD_SRVSOCKS];
+S #ifdef __RTX
+S   SemaphoreHandle_t  bsd_mutex = NULL;
+S   SemaphoreHandle_t  bsd_sem = NULL;
+S  #define BSD_INRTX  __TRUE
+S #else
+S  #define BSD_INRTX  __FALSE
+S #endif
+S BSD_CFG bsd_config = {
+S   bsd_scb,
+S   BSD_NUMSOCKS + BSD_SRVSOCKS,
+S   BSD_INRTX,
+S   BSD_RCVTOUT * TICK_RATE
+S };
+S#endif
+S
+S/*----------------------------------------------------------------------------
+S *      Library Interface
+S *---------------------------------------------------------------------------*/
+S
+S
+S/*--------------------------- init_system -----------------------------------*/
+S
+Svoid init_system (void) {
+S  /* Initialize configured interfaces and applications. */
+S	
+S#if (ETH_ENABLE)
+S  eth_init_link ();
+S#endif
+S#if (PPP_ENABLE)
+S  ppp_init_link ();
+S#endif
+S#if (SLIP_ENABLE)
+S  slip_init_link ();
+S#endif
+S  ip_init ();
+S  icmp_init ();
+S#if (ETH_ENABLE && IGMP_ENABLE)
+S  igmp_init ();
+S#endif
+S#if (UDP_ENABLE)
+S  udp_init ();
+S#endif
+S#if (TCP_ENABLE)
+S  tcp_init ();
+S#endif
+S#if (BSD_ENABLE)
+S  bsd_init ();
+S #if (BSD_GETHOSTEN)
+S  bsd_init_host ();
+S #endif
+S#endif
+S#if (HTTP_ENABLE)
+S  http_init ();
+S#endif
+S#if (TNET_ENABLE)
+S  tnet_init ();
+S#endif
+S#if (TFTP_ENABLE)
+S  tftp_init ();
+S#endif
+S#if (TFTPC_ENABLE)
+S  tftpc_init ();
+S#endif
+S#if (FTP_ENABLE)
+S  ftp_init ();
+S#endif
+S#if (FTPC_ENABLE)
+S  ftpc_init ();
+S#endif
+S#if (ETH_ENABLE && NBNS_ENABLE)
+S  nbns_init ();
+S#endif
+S#if (ETH_ENABLE && DHCP_ENABLE)
+S  dhcp_init ();
+S#elif (ETH_ENABLE)
+S  arp_notify ();
+S#endif
+S#if (DNS_ENABLE)
+S  dns_init ();
+S#endif
+S#if (SMTP_ENABLE)
+S  smtp_init ();
+S#endif
+S#if (SNMP_ENABLE)
+S  snmp_init ();
+S#endif
+S#if (SNTP_ENABLE)
+S  sntp_init ();
+S#endif
+S
+S#if (BSD_ENABLE && __RTX)
+S {
+S	bsd_mutex = xSemaphoreCreateMutex();
+S	if(bsd_mutex == NULL)
+S    {
+S        /* ERR */
+S    }	 
+S	
+S	bsd_sem = xSemaphoreCreateBinary();
+S	if(bsd_sem == NULL)
+S    {
+S        /* ERR */
+S    }
+S }
+S#endif
+S}
+S
+S
+S/*--------------------------- run_system ------------------------------------*/
+S
+Svoid run_system (void) {
+S  /* Run configured interfaces and applications. */
+S
+S#if (BSD_ENABLE && __RTX)
+S	xSemaphoreTake(bsd_mutex, portMAX_DELAY);
+S#endif
+S
+S#if (ETH_ENABLE)
+S  eth_run_link ();
+S#endif
+S#if (PPP_ENABLE)
+S  ppp_run_link ();
+S#endif
+S#if (SLIP_ENABLE)
+S  slip_run_link ();
+S#endif
+S  ip_run_local ();
+S  icmp_run_engine ();
+S#if (ETH_ENABLE && IGMP_ENABLE)
+S  igmp_run_host ();
+S#endif
+S#if (TCP_ENABLE)
+S  tcp_poll_sockets ();
+S#endif
+S#if (BSD_ENABLE)
+S  bsd_poll_sockets ();
+S#endif
+S#if (HTTP_ENABLE)
+S  http_run_server ();
+S#endif
+S#if (TNET_ENABLE)
+S  tnet_run_server ();
+S#endif
+S#if (TFTP_ENABLE)
+S  tftp_run_server ();
+S#endif
+S#if (TFTPC_ENABLE)
+S  tftpc_run_client ();
+S#endif
+S#if (FTP_ENABLE)
+S  ftp_run_server ();
+S#endif
+S#if (FTPC_ENABLE)
+S  ftpc_run_client ();
+S#endif
+S#if (ETH_ENABLE && DHCP_ENABLE)
+S  dhcp_run_client ();
+S#endif
+S#if (DNS_ENABLE)
+S  dns_run_client ();
+S#endif
+S#if (SMTP_ENABLE)
+S  smtp_run_client ();
+S#endif
+S#if (SNMP_ENABLE)
+S  snmp_run_agent ();
+S#endif
+S#if (SNTP_ENABLE)
+S  sntp_run_client ();
+S#endif
+S
+S#if (BSD_ENABLE && __RTX)
+S  xSemaphoreGive(bsd_mutex);
+S#endif
+S}
+S
+S
+S/*--------------------------- bsd_suspend/resume ----------------------------*/
+S
+S#if (BSD_ENABLE && __RTX)
+S__used void bsd_suspend (U8 *tsk_id) {
+S  /* Suspend a socket owner task. */
+S  xSemaphoreGive(bsd_mutex);
+S  xSemaphoreTake(bsd_sem, portMAX_DELAY);
+S  xSemaphoreTake(bsd_mutex, portMAX_DELAY);	
+S}
+S
+S__used void bsd_resume (U8 tsk_id) {
+S  /* Resume a task waiting for a socket event. */
+S  xSemaphoreGive(bsd_sem);
+S}
+S#endif
+S
+S
+S/*--------------------------- bsd_lock/unlock -------------------------------*/
+S
+S#if (BSD_ENABLE && __RTX)
+S__used void bsd_lock (void) {
+S  /* Acquire mutex - Lock TCPnet functions. */
+S  xSemaphoreTake(bsd_mutex, portMAX_DELAY);	
+S}
+S
+S__used void bsd_unlock (void) {
+S  /* Release mutex - Unlock TCPnet functions. */
+S  xSemaphoreGive(bsd_mutex);
+S}
+S#endif
+S
+S
+S/*--------------------------- size optimization -----------------------------*/
+S
+S#if !(ETH_ENABLE)
+S/* Empty functions when Ethernet Interface is disabled. */
+SBOOL eth_chk_adr (OS_FRAME *frame)   { return (__FALSE); }
+SU8  *eth_get_adr (U8 *ipadr)         { return (NULL); }
+SBOOL eth_send_frame (OS_FRAME *frame){ return (__FALSE); }
+S#endif
+S
+S#if !(ETH_ENABLE && IGMP_ENABLE)
+S/* Empty functions when IP Multicasting is not enabled. */
+SBOOL igmp_is_member (U8 *ipadr)      { return (__FALSE); }
+Svoid igmp_process (OS_FRAME *frame)  { ; }
+S#endif
+S
+S#if (ETH_ENABLE && !DHCP_ENABLE)
+S/* Empty function when DHCP not enabled. */
+Svoid dhcp_disable (void)             { ; }
+S#endif
+S
+S#if !(PPP_ENABLE)
+S/* Empty function when PPP Interface is disabled. */
+SBOOL ppp_send_frame (OS_FRAME *frame, U16 prot) { return (__FALSE); }
+S#endif
+S
+S#if (PPP_ENABLE && !(PPP_AUTHEN && PPP_PAPEN))
+S/* Empty functions when PAP authentication not enabled. */
+Svoid pap_init (void)                 { ; }
+Svoid pap_run (void)                  { ; }
+Svoid pap_process (OS_FRAME *frame)   { ; }
+S#endif
+S
+S#if (PPP_ENABLE && !(PPP_AUTHEN && PPP_CHAPEN))
+S/* Empty functions when CHAP authentication not enabled. */
+Svoid chap_init (void)                { ; }
+Svoid chap_run (void)                 { ; }
+Svoid chap_process (OS_FRAME *frame)  { ; }
+S#endif
+S
+S#if !(SLIP_ENABLE)
+S/* Empty function when SLIP Interface is disabled. */
+SBOOL slip_send_frame (OS_FRAME *frame) { return (__FALSE); }
+S#endif
+S
+S#if !(UDP_ENABLE)
+S/* Empty function when UDP socket not enabled. */
+Svoid udp_process (OS_FRAME *frame)   { ; }
+S#endif
+S
+S#if !(TCP_ENABLE)
+S/* Empty function when TCP socket not enabled. */
+Svoid tcp_process (OS_FRAME *frame)   { ; }
+S#endif
+S
+S#if !(SNTP_ENABLE)
+S/* Empty function when SNTP not enabled. */
+SBOOL sntp_get_time (U8 *ipadr, void (*cbfunc)(U32)) { return(__FALSE); }
+S#endif
+S
+S#if (BSD_ENABLE && !__RTX)
+S/* Empty functions for non RTX environment. */
+S__used U8   bsd_wait   (BSD_INFO *bsd_s, U8 evt) { return (0);}
+S__used void bsd_enable (BSD_INFO *bsd_s, U8 evt) { ; }
+S#endif
+S
+N#endif    /* __NET_CONFIG__ */
+N
+N
+N/*----------------------------------------------------------------------------
+N *      Library for Net_Debug.c
+N *---------------------------------------------------------------------------*/
+N
+N#ifdef __NET_DEBUG__
+S
+S/* Non-Critical Net_Debug.c upgrade */
+S#ifndef DBG_TIME
+S #define DBG_TIME   1
+S#endif
+S#ifdef DBG_APP
+S #define DBG_HTTP   DBG_APP
+S #define DBG_FTP    DBG_APP
+S #define DBG_FTPC   DBG_APP
+S #define DBG_TNET   DBG_APP
+S #define DBG_TFTP   DBG_APP
+S #define DBG_TFTPC  DBG_APP
+S #define DBG_SMTP   DBG_APP
+S#endif
+S
+S#include <stdarg.h>
+S#include <stdio.h>
+S
+S#pragma diag_suppress 111
+S
+Sextern char *dbg_time (void);
+Sextern char *dbg_proc (U32 proc);
+S
+S/*--------------------------- __debug__ -------------------------------------*/
+S
+Svoid __debug__ (U32 proc, const char *fmt, ...) {
+S  /* Print TCPnet Debug messages. */
+S  va_list args;
+S
+S  switch (proc) {
+S#if (DBG_MEM > 1)
+S    case MODULE_MEM:  break;
+S#endif
+S#if (DBG_ETH > 1)
+S    case MODULE_ETH:  break;
+S#endif
+S#if (DBG_PPP > 1)
+S    case MODULE_PPP:  break;
+S#endif
+S#if (DBG_SLIP > 1)
+S    case MODULE_SLIP: break;
+S#endif
+S#if (DBG_ARP > 1)
+S    case MODULE_ARP:  break;
+S#endif
+S#if (DBG_IP > 1)
+S    case MODULE_IP:   break;
+S#endif
+S#if (DBG_ICMP > 1)
+S    case MODULE_ICMP: break;
+S#endif
+S#if (DBG_IGMP > 1)
+S    case MODULE_IGMP: break;
+S#endif
+S#if (DBG_UDP > 1)
+S    case MODULE_UDP:  break;
+S#endif
+S#if (DBG_TCP > 1)
+S    case MODULE_TCP:  break;
+S#endif
+S#if (DBG_NBNS > 1)
+S    case MODULE_NBNS: break;
+S#endif
+S#if (DBG_DHCP > 1)
+S    case MODULE_DHCP: break;
+S#endif
+S#if (DBG_DNS > 1)
+S    case MODULE_DNS:  break;
+S#endif
+S#if (DBG_SNMP > 1)
+S    case MODULE_SNMP: break;
+S#endif
+S#if (DBG_BSD > 1)
+S    case MODULE_BSD:  break;
+S#endif
+S#if (DBG_HTTP > 1)
+S    case MODULE_HTTP: break;
+S#endif
+S#if (DBG_FTP > 1)
+S    case MODULE_FTP:  break;
+S#endif
+S#if (DBG_FTPC > 1)
+S    case MODULE_FTPC: break;
+S#endif
+S#if (DBG_TNET > 1)
+S    case MODULE_TNET: break;
+S#endif
+S#if (DBG_TFTP > 1)
+S    case MODULE_TFTP: break;
+S#endif
+S#if (DBG_TFTPC > 1)
+S    case MODULE_TFTPC:break;
+S#endif
+S#if (DBG_SMTP > 1)
+S    case MODULE_SMTP: break;
+S#endif
+S#if (DBG_SNTP > 1)
+S    case MODULE_SNTP: break;
+S#endif
+S    default: return;
+S  }
+S#if (DBG_TIME)
+S  printf (dbg_time());
+S#endif
+S  printf ("%s:",dbg_proc(proc));
+S
+S  va_start (args,fmt);
+S  vprintf (fmt,args);
+S  va_end (args);
+S}
+S
+S
+S/*--------------------------- __error__ -------------------------------------*/
+S
+Svoid __error__ (U32 proc, const char *fmt, ...) {
+S  /* Print TCPnet Error messages. */
+S  va_list args;
+S
+S  switch (proc) {
+S#if (DBG_MEM > 0)
+S    case MODULE_MEM:  break;
+S#endif
+S#if (DBG_ETH > 0)
+S    case MODULE_ETH:  break;
+S#endif
+S#if (DBG_PPP > 0)
+S    case MODULE_PPP:  break;
+S#endif
+S#if (DBG_SLIP > 0)
+S    case MODULE_SLIP: break;
+S#endif
+S#if (DBG_ARP > 0)
+S    case MODULE_ARP:  break;
+S#endif
+S#if (DBG_IP > 0)
+S    case MODULE_IP:   break;
+S#endif
+S#if (DBG_ICMP > 0)
+S    case MODULE_ICMP: break;
+S#endif
+S#if (DBG_IGMP > 0)
+S    case MODULE_IGMP: break;
+S#endif
+S#if (DBG_UDP > 0)
+S    case MODULE_UDP:  break;
+S#endif
+S#if (DBG_TCP > 0)
+S    case MODULE_TCP:  break;
+S#endif
+S#if (DBG_NBNS > 0)
+S    case MODULE_NBNS: break;
+S#endif
+S#if (DBG_DHCP > 0)
+S    case MODULE_DHCP: break;
+S#endif
+S#if (DBG_DNS > 0)
+S    case MODULE_DNS:  break;
+S#endif
+S#if (DBG_SNMP > 0)
+S    case MODULE_SNMP: break;
+S#endif
+S#if (DBG_BSD > 0)
+S    case MODULE_BSD:  break;
+S#endif
+S#if (DBG_HTTP > 0)
+S    case MODULE_HTTP: break;
+S#endif
+S#if (DBG_FTP > 0)
+S    case MODULE_FTP:  break;
+S#endif
+S#if (DBG_FTPC > 0)
+S    case MODULE_FTPC: break;
+S#endif
+S#if (DBG_TNET > 0)
+S    case MODULE_TNET: break;
+S#endif
+S#if (DBG_TFTP > 0)
+S    case MODULE_TFTP: break;
+S#endif
+S#if (DBG_TFTPC > 0)
+S    case MODULE_TFTPC:break;
+S#endif
+S#if (DBG_SMTP > 0)
+S    case MODULE_SMTP: break;
+S#endif
+S#if (DBG_SNTP > 0)
+S    case MODULE_SNTP: break;
+S#endif
+S    default: return;
+S  }
+S#if (DBG_TIME)
+S  printf (dbg_time());
+S#endif
+S  printf ("%s-ERR:",dbg_proc(proc));
+S
+S  va_start (args,fmt);
+S  vprintf (fmt,args);
+S  va_end (args);
+S}
+S
+N#endif    /* __NET_DEBUG__ */
+N
+N
+N/*----------------------------------------------------------------------------
+N * end of file
+N *---------------------------------------------------------------------------*/
