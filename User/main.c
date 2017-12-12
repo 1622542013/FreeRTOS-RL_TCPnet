@@ -274,7 +274,7 @@ static void vTaskSocket(void *pvParameters)
 {
     while(1)
     {
-		TCPnetTest();
+			TCPnetTest();
     }
 }
 
@@ -418,8 +418,6 @@ static void AppObjCreate (void)
 *	返 回 值: 无
 *********************************************************************************************************
 */
-
-
 #include <stdarg.h>
 #include <stdio.h>
 void App_Printf(char* fmt,...)  
@@ -434,27 +432,5 @@ void App_Printf(char* fmt,...)
   
     USART_OUT(USART_1, (uint8_t*)buff, strlen(buff));
 }
-//#define u1_printf(format, ...);
-//static void  App_Printf(char *format, ...)
-//{
-////    char  buf_str[512 + 1];
-////    va_list   v_args;
-
-
-////    va_start(v_args, format);
-////   (void)vsnprintf((char       *)&buf_str[0],
-////                   (size_t      ) sizeof(buf_str),
-////                   (char const *) format,
-////                                  v_args);
-////    va_end(v_args);
-
-//	/* 互斥信号量 */
-//	xSemaphoreTake(xMutex, portMAX_DELAY);
-
-////    printf("%s", buf_str);
-//	u1_printf(format, ...);  
-
-//   	xSemaphoreGive(xMutex);
-//}
 
 /***************************** 安富莱电子 www.armfly.com (END OF FILE) *********************************/

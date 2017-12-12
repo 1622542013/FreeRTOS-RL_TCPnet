@@ -22,7 +22,7 @@
 #include <stm32f4xx.h>             
 #include "ETH_STM32F4xx.h"
 #include "stdio.h"
-
+#include "USART.h"
 
 
 /*
@@ -121,6 +121,8 @@ static void Eth_Link_EXTIConfig(void);
 *	返 回 值: 无
 *********************************************************************************************************
 */
+#include "usart.h"
+
 void init_ethernet (void) 
 {
 	U32 regv,tout,conn; 
@@ -140,37 +142,54 @@ void init_ethernet (void)
 	/* 停止复位以太网MAC */
 	RCC->AHB1RSTR &= ~0x02000000;
 
-	/* 使能以太网时钟，GPIOA，GPIOB，GPIOC，GPIOG时钟 */
-	RCC->AHB1ENR |= 0x1E000047;
+  GPIO_InitTypeDef GPIO_InitStructure;
+  
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA|RCC_AHB1Periph_GPIOC|RCC_AHB1Periph_GPIOG|RCC_AHB1Periph_GPIOD, ENABLE);//使能GPIO时钟 RMII接口
+	  //配置PA1 PA2 PA7
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_7;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;  
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_ETH); //引脚复用到网络接口上
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_ETH);
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource7, GPIO_AF_ETH);
 
-	/* 原始驱动还配置了PA8，用于给PHY芯片提供时钟，V6开发板外置有源晶振，无需配置PA8 */
-	/* 配置PA1，PA2和PA7，复用功能，推挽模式，100MHz，无上拉下拉，复用到AF11 (Ethernet) */
-	GPIOA->MODER   &= ~0x0000C03C;
-	GPIOA->MODER   |=  0x00008028;              
-	GPIOA->OTYPER  &= ~0x00000086;              
-	GPIOA->OSPEEDR |=  0x0003C03C;              
-	GPIOA->PUPDR   &= ~0x0003C03C;             
-	GPIOA->AFR[0]  &= ~0xF0000FF0;
-	GPIOA->AFR[0]  |=  0xB0000BB0;              
-
-	/* 配置PC1，PC4和PC5，复用功能，推挽模式，100MHz，无上拉下拉，复用到AF11 (Ethernet) */
-	GPIOC->MODER   &= ~0x00000F0C;
-	GPIOC->MODER   |=  0x00000A08;             
-	GPIOC->OTYPER  &= ~0x00000032;              
-	GPIOC->OSPEEDR |=  0x00000F0C;              
-	GPIOC->PUPDR   &= ~0x00000F0C;            
-	GPIOC->AFR[0]  &= ~0x00FF00F0;
-	GPIOC->AFR[0]  |=  0x00BB00B0;              
-
-	/* 配置PG11，PG13和PG14，复用功能，推挽模式，100MHz，无上拉下拉，复用到AF11 (Ethernet) */
-	GPIOG->MODER   &= ~0x3CC00000;
-	GPIOG->MODER   |=  0x28800000;             
-	GPIOG->OTYPER  &= ~0x00006800;             
-	GPIOG->OSPEEDR |=  0x3CC00000;           
-	GPIOG->PUPDR   &= ~0x3CC00000;            
-	GPIOG->AFR[1]  &= ~0x0FF0F000;
-	GPIOG->AFR[1]  |=  0x0BB0B000;             
-
+	//配置PC1,PC4 and PC5
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_4 | GPIO_Pin_5;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource1, GPIO_AF_ETH); //引脚复用到网络接口上
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource4, GPIO_AF_ETH);
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource5, GPIO_AF_ETH);
+                                
+	//配置PG11, PG14 and PG13 
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_11 | GPIO_Pin_13 | GPIO_Pin_14;
+	GPIO_Init(GPIOG, &GPIO_InitStructure);
+	GPIO_PinAFConfig(GPIOG, GPIO_PinSource11, GPIO_AF_ETH);
+	GPIO_PinAFConfig(GPIOG, GPIO_PinSource13, GPIO_AF_ETH);
+	GPIO_PinAFConfig(GPIOG, GPIO_PinSource14, GPIO_AF_ETH);
+	
+	//配置PD3为推完输出
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;	//推完输出
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;  
+	GPIO_Init(GPIOD, &GPIO_InitStructure);          
+  
+  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_ETH_MAC | RCC_AHB1Periph_ETH_MAC_Tx |RCC_AHB1Periph_ETH_MAC_Rx, ENABLE);
+  
+  GPIO_ResetBits(GPIOD, GPIO_Pin_3);
+  
+   
+  //Delay_ms(50);
+	for(int i = 9999;i>0;i--)
+		for(int i = 9999;i>0;i--);
+   
+  GPIO_SetBits(GPIOD, GPIO_Pin_3);
+  
 	/* 
 	  寄存器ETH->DMABMR的SR位置1后，MAC DMA控制器会复位所有MAC子系统的内部寄存器和逻辑。在所有内
 	  核时钟域完成复位操作后，该位自动清零。重新编程任何内核寄存器之前，在该位中读取0 值。
@@ -192,14 +211,16 @@ void init_ethernet (void)
     */
 	ETH->MACMIIAR = 0x00000010;
 
-	/*
-	  注意事项：DM9161可以上电后就读取其ID寄存器，但是DM9162不行，需要延迟一段时间这里为了方便起见，
-	  直接将其复位，发送复位指令可以立即执行。
-	*/
-	/* 第1步：复位DM9161/9162 ***********************************************************/
-	printf_eth("===============================================================\r\n");
-	printf_eth("下面是DM9161/9162的硬件初始化：\r\n");
-	printf_eth("1. Start PHY_ID_DM9161/9162 Init\r\n");
+//	/*
+//	  注意事项：DM9161可以上电后就读取其ID寄存器，但是DM9162不行，需要延迟一段时间这里为了方便起见，
+//	  直接将其复位，发送复位指令可以立即执行。
+//	*/
+//	/* 第1步：复位DM9161/9162 ***********************************************************/
+//	printf_eth("===============================================================\r\n");
+//	printf_eth("下面是DM9161/9162的硬件初始化：\r\n");
+//	printf_eth("1. Start PHY_ID_DM9161/9162 Init\r\n");
+
+  u1_printf("下面是PHY的硬件初始化：\r\n");
 	
 	/* 发送复位命令 */
 	write_PHY (PHY_REG_BMCR, 0x8000);
@@ -210,8 +231,8 @@ void init_ethernet (void)
 		regv = read_PHY (PHY_REG_BMCR);
 		if (!(regv & 0x8800)) 
 		{
+      u1_printf("复位完成\r\n");
 			/* 复位完成 */
-			printf_eth("2. Reset Complete\r\n");
 			break;
 		}
 	}
@@ -226,25 +247,25 @@ void init_ethernet (void)
 	write_PHY (PHY_REG_BMCR, PHY_AUTO_NEG);
 	
 	/* 等待完成Auto-Negotiation */
-	for (tout = 0; tout < 0x100000; tout++) 
+	for (tout = 0; tout < 0xF00000; tout++) 
 	{
 		regv = read_PHY (PHY_REG_BMSR);
 		if (regv & 0x0020) 
 		{
+      u1_printf("完成自适应设置\r\n");
 			/* 完成Auto-Negotiation */
-			printf_eth("3. Auto-Negotiation Complete\r\n");
 			break;
 		}
 	}
 #endif
 	
 	/* 第3步：检测连接状态 ***********************************************************/
-	for (tout = 0; tout < 0x10000; tout++) 
+	for (tout = 0; tout < 0xF0000; tout++) 
 	{
 		regv = read_PHY (PHY_REG_BMSR);
 		if (regv & (1 << 2)) 
 		{
-			printf_eth("4. Connection Succeeded\r\n");
+      u1_printf("连接成功\r\n");
 			
 			/* PHY已经连接上网络 */ 
 			g_ucEthLinkStatus = 1;
@@ -254,22 +275,23 @@ void init_ethernet (void)
 			
 			if ((regv & (1 << 15))|(regv & (1 << 13))) 
 			{
+        u1_printf("全双工\r\n");
 				/* 全双工 */
-				printf_eth("5. Full-duplex connection\r\n");
 				conn |= PHY_CON_SET_FULLD;
 			}
 			
 			if ((regv & (1 << 15))|(regv & (1 << 14))) 
 			{
+        u1_printf("速度100Mbps的网络\r\n");
 				/* 速度100Mbps的网络 */
-				printf_eth("6. 100Mbps Mode\r\n");
+
 				conn |= PHY_CON_SET_100M;
 			}
 			break;
 		}
 		else
 		{
-			printf_eth("4. Connection failed\r\n");
+      u1_printf("连接失败\r\n");
 			
 			/* 未连接上 */ 
 			g_ucEthLinkStatus = 0;
@@ -361,7 +383,8 @@ void init_ethernet (void)
 	/* 设置为最高优先级，仅调用NVIC->ISER设置的默认优先级也是最高优先级0 */
 	NVIC_SetPriority(ETH_IRQn, 0);
 	
-	printf_eth("===============================================================\r\n");
+  u1_printf("初始化完成\r\n");
+
 }
 
 /*
