@@ -20,4 +20,5 @@ Output/
 *.o
 *.d
 *.crf
+*.txt
 output.*
