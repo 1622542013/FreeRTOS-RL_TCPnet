@@ -17,3 +17,7 @@ ipch/
 Output/
 *mygit*
 *.pub
+*.o
+*.d
+*.crf
+output.*
