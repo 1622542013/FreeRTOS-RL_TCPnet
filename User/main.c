@@ -140,6 +140,9 @@ int main(void)
 	
 	/* 创建任务 */
 	AppTaskCreate();
+	
+		/* 初始化RL-TCPnet */
+	init_TcpNet ();
 
 	/* 创建任务通信机制 */
 	AppObjCreate();
@@ -227,18 +230,20 @@ static void vTaskTaskUserIF(void *pvParameters)
 */
 static void vTaskLED(void *pvParameters)
 {
-	TickType_t xLastWakeTime;
-	const TickType_t xFrequency = 500;
+  static uint32_t time_count;
 
-	/* 获取当前的系统时间 */
-    xLastWakeTime = xTaskGetTickCount();
-	
+  TickType_t xLastSYSTime;
+  
+  xLastSYSTime = xTaskGetTickCount();/*读取此时时间*/
+		
     while(1)
     {
-		bsp_LedToggle(2);
+			time_count++;
+			
+			App_Printf("系统运行时间： %d秒\r\n",time_count);  
 		
 		/* vTaskDelayUntil是绝对延迟，vTaskDelay是相对延迟。*/
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+        vTaskDelayUntil(&xLastSYSTime, 1000);
     }
 }
 
@@ -311,9 +316,6 @@ static void vTaskStart(void *pvParameters)
 	TickType_t xLastWakeTime;
 	const TickType_t xFrequency = 100;
 	
-	/* 初始化RL-TCPnet */
-	init_TcpNet ();
-	
 	/* 获取当前的系统时间 */
     xLastWakeTime = xTaskGetTickCount();
 	
@@ -337,49 +339,49 @@ static void vTaskStart(void *pvParameters)
 */
 static void AppTaskCreate (void)
 {
-    xTaskCreate( vTaskTaskUserIF,   	/* 任务函数  */
-                 "vTaskUserIF",     	/* 任务名    */
-                 512,               	/* 任务栈大小，单位word，也就是4字节 */
-                 NULL,              	/* 任务参数  */
-                 1,                 	/* 任务优先级*/
-                 &xHandleTaskUserIF );  /* 任务句柄  */
-	
-	
+//    xTaskCreate( vTaskTaskUserIF,   	/* 任务函数  */
+//                 "vTaskUserIF",     	/* 任务名    */
+//                 512,               	/* 任务栈大小，单位word，也就是4字节 */
+//                 NULL,              	/* 任务参数  */
+//                 1,                 	/* 任务优先级*/
+//                 &xHandleTaskUserIF );  /* 任务句柄  */
+//	
+//	
 	xTaskCreate( vTaskLED,    		/* 任务函数  */
                  "vTaskLED",  		/* 任务名    */
-                 512,         		/* stack大小，单位word，也就是4字节 */
+                 20,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        		/* 任务参数  */
                  2,           		/* 任务优先级*/
                  &xHandleTaskLED ); /* 任务句柄  */
-	
-	xTaskCreate( vTaskMsgPro,     		/* 任务函数  */
-                 "vTaskMsgPro",   		/* 任务名    */
-                 512,             		/* 任务栈大小，单位word，也就是4字节 */
-                 NULL,           		/* 任务参数  */
-                 3,               		/* 任务优先级*/
-                 &xHandleTaskMsgPro );  /* 任务句柄  */
+//	
+//	xTaskCreate( vTaskMsgPro,     		/* 任务函数  */
+//                 "vTaskMsgPro",   		/* 任务名    */
+//                 512,             		/* 任务栈大小，单位word，也就是4字节 */
+//                 NULL,           		/* 任务参数  */
+//                 3,               		/* 任务优先级*/
+//                 &xHandleTaskMsgPro );  /* 任务句柄  */
 
     xTaskCreate( vTaskSocket,     		/* 任务函数  */
                  "vTaskSocket",   		/* 任务名    */
                  512,            		/* 任务栈大小，单位word，也就是4字节 */
                  NULL,           		/* 任务参数  */
-                 4,              		/* 任务优先级*/
+                 2,              		/* 任务优先级*/
                  &xHandleTaskSocket );  /* 任务句柄  */
 				 
     xTaskCreate( vTaskTCPnet,     		/* 任务函数  */
                  "vTaskTCPnet",   		/* 任务名    */
-                 512,            		/* 任务栈大小，单位word，也就是4字节 */
+                 50,            		/* 任务栈大小，单位word，也就是4字节 */
                  NULL,           		/* 任务参数  */
-                 5,              		/* 任务优先级*/
+                 2,              		/* 任务优先级*/
                  &xHandleTaskTCPnet );  /* 任务句柄  */
 	
 	
-	xTaskCreate( vTaskStart,     		/* 任务函数  */
-                 "vTaskStart",   		/* 任务名    */
-                 512,            		/* 任务栈大小，单位word，也就是4字节 */
-                 NULL,           		/* 任务参数  */
-                 6,              		/* 任务优先级*/
-                 &xHandleTaskStart );   /* 任务句柄  */
+		xTaskCreate( vTaskStart,     		/* 任务函数  */
+									 "vTaskStart",   		/* 任务名    */
+									 30,            		/* 任务栈大小，单位word，也就是4字节 */
+									 NULL,           		/* 任务参数  */
+									 2,              		/* 任务优先级*/
+									 &xHandleTaskStart );   /* 任务句柄  */
 }
 
 /*
@@ -422,15 +424,20 @@ static void AppObjCreate (void)
 #include <stdio.h>
 void App_Printf(char* fmt,...)  
 {  
+  /* 互斥信号量 */
+  xSemaphoreTake(xMutex, portMAX_DELAY);
+
   static char buff[USART1_BufferSize_Tx];
+
+  memset(buff,0,USART1_BufferSize_Tx);
+  va_list ap;
+  va_start(ap,fmt);
+  vsprintf((char*)buff,fmt,ap);
+  va_end(ap);
+
+  USART_OUT(USART_1, (uint8_t*)buff, strlen(buff));
   
-    memset(buff,0,USART1_BufferSize_Tx);
-    va_list ap;
-    va_start(ap,fmt);
-    vsprintf((char*)buff,fmt,ap);
-    va_end(ap);
-  
-    USART_OUT(USART_1, (uint8_t*)buff, strlen(buff));
+  xSemaphoreGive(xMutex); 
 }
 
 /***************************** 安富莱电子 www.armfly.com (END OF FILE) *********************************/
